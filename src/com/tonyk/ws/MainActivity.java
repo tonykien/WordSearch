@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -74,8 +75,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 	private ArrayList<Cell> mListCells = new ArrayList<Cell>();
 	private ArrayList<Integer> mAvaiableDirection = new ArrayList<Integer>();
 
-	public int SIZE_X = 8;
-	public int SIZE_Y = 8;
+	public int SIZE_X = 12;
+	public int SIZE_Y = 12;
 
 	public int TIME_COUNT = 120;
 	private CountDownTimer mCountDownTimer;
@@ -786,7 +787,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 							}
 
 							if (mFindoutWords.size() == mListWords.length) {
-								findAllWords();
+								showDialogWhenComplete();
 							}
 							break;
 						}
@@ -800,6 +801,12 @@ public class MainActivity extends Activity implements OnTouchListener {
 			break;
 		}
 		return true;
+	}
+	
+	private void showDialogWhenComplete() {
+		Dialog dialog = new Dialog(this, R.style.DialogSlideAnim);
+		dialog.setContentView(R.layout.dialog_complete_level);
+		dialog.show();
 	}
 
 	private void findAllWords() {
