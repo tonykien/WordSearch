@@ -3,5 +3,9 @@
 
     <string name="app_name">WS</string>
     <string name="hello_world">Hello world!</string>
+    <string name="banner_ad_unit_id">ca-app-pub-2117529455454871/3202717542</string>
+    <string name="replay">Replay</string>
+    <string name="menu">Menu</string>
+    <string name="next">Next</string>
 
 </resources>
