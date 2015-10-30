@@ -5,12 +5,10 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
 import android.content.SharedPreferences;
@@ -24,12 +22,10 @@ import android.os.CountDownTimer;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ProgressBar;
@@ -38,10 +34,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.tonyk.ws.adapters.CellGridviewAdapter;
 import com.tonyk.ws.custom.FlowLayout;
 import com.tonyk.ws.custom.StrokeView;
+import com.tonyk.ws.utils.Define;
+import com.tonyk.ws.utils.WSUtil;
 
-public class MainActivity extends Activity implements OnTouchListener {
+public class MainActivity extends Activity implements OnTouchListener, OnClickListener {
 
 	public static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVXYZW";
 
@@ -75,8 +74,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 	private ArrayList<Cell> mListCells = new ArrayList<Cell>();
 	private ArrayList<Integer> mAvaiableDirection = new ArrayList<Integer>();
 
-	public int SIZE_X = 12;
-	public int SIZE_Y = 12;
+	public int SIZE_X = Define.SIZE_X;
+	public int SIZE_Y = Define.SIZE_Y;
 
 	public int TIME_COUNT = 120;
 	private CountDownTimer mCountDownTimer;
@@ -84,12 +83,14 @@ public class MainActivity extends Activity implements OnTouchListener {
 	private long mRunningTime;
 
 	private GridView mGridLetter;
-	private GvAdapter mAdapter;
+	private CellGridviewAdapter mAdapter;
 
 	private StrokeView mStrokeView;
 	private FlowLayout mFlowLayout;
 
 	private int mLevel = 0;
+	
+	private Dialog mCompleteDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +105,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 		mGridLetter = (GridView) findViewById(R.id.gvLetter);
 		mGridLetter.setNumColumns(SIZE_X);
 
-		mAdapter = new GvAdapter(this, mListCells);
+		mAdapter = new CellGridviewAdapter(this, mListCells);
 		mGridLetter.setAdapter(mAdapter);
 
 		mStrokeView = (StrokeView) findViewById(R.id.strokeview);
@@ -282,11 +283,15 @@ public class MainActivity extends Activity implements OnTouchListener {
 		isCreating = true;
 		for (int i = 0; i < mListWords.length; i++) {
 			String word = mListWords[i];
-			int startPos = getStartPosition(word);
-			checkDirection(word, startPos);
+			// int startPos = getStartPosition(word);
+			// checkDirection(word, startPos);
+			int startPos = WSUtil.getStartPosition(word, mListCells, mAvaiableDirection);
+			mAvaiableDirection = WSUtil.getAvaiableDirections(word, startPos, mListCells, mAvaiableDirection);
 			while (mAvaiableDirection.isEmpty()) {
-				startPos = getStartPosition(word);
-				checkDirection(word, startPos);
+				// startPos = getStartPosition(word);
+				// checkDirection(word, startPos);
+				startPos = WSUtil.getStartPosition(word, mListCells, mAvaiableDirection);
+				mAvaiableDirection = WSUtil.getAvaiableDirections(word, startPos, mListCells, mAvaiableDirection);
 				// Log.e("isCreating", isCreating + "");
 				if (!isCreating) {
 					Log.i("not", "not success");
@@ -298,365 +303,10 @@ public class MainActivity extends Activity implements OnTouchListener {
 				}
 			}
 
-			int direct = getDirection();
-			setCellByDirect(direct, word, startPos);
+			int direct = WSUtil.getRandomDirection(mAvaiableDirection);
+			WSUtil.setCellByDirect(direct, word, startPos, mListCells);
 		}
 		return true;
-	}
-
-	public int getStartPosition(String word) {
-		mAvaiableDirection.clear();
-		Random r = new Random();
-		int x, y;
-		Cell cell;
-		int offsetX = SIZE_X - word.length();
-		int offsetY = SIZE_Y - word.length();
-		do {
-			x = r.nextInt(SIZE_X);
-			y = r.nextInt(SIZE_Y);
-			cell = mListCells.get(x + y * SIZE_X);
-		} while ((offsetX < x && x < SIZE_X - 1 - offsetX && offsetY < y && y < SIZE_Y - 1
-				- offsetY)
-				|| (cell.isFilled() && cell.getLetter() != word.charAt(0)));
-
-		if (x <= SIZE_X - word.length() && y <= SIZE_Y - word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.S))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.S));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.SE))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.SE));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.E))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.E));
-			}
-		}
-
-		if (x <= SIZE_X - word.length() && y >= word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.N))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.N));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.NE))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.NE));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.E))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.E));
-			}
-		}
-
-		if (x >= word.length() && y >= word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.N))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.N));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.NW))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.NW));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.W))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.W));
-			}
-		}
-
-		if (x >= word.length() && y <= SIZE_Y - word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.S))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.S));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.SW))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.SW));
-			}
-
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.W))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.W));
-			}
-		}
-
-		if (x <= SIZE_X - word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.E))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.E));
-			}
-		}
-
-		if (x >= word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.W))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.W));
-			}
-		}
-
-		if (y <= SIZE_Y - word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.S))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.S));
-			}
-		}
-
-		if (y >= word.length()) {
-			if (!mAvaiableDirection.contains(Integer.valueOf(Direction.N))) {
-				mAvaiableDirection.add(Integer.valueOf(Direction.N));
-			}
-		}
-
-		return x + y * SIZE_X;
-	}
-
-	public int getDirection() {
-		Random r = new Random();
-		return mAvaiableDirection.get(r.nextInt(mAvaiableDirection.size())).intValue();
-	}
-
-	public void checkDirection(String word, int startPos) {
-		for (int i = mAvaiableDirection.size() - 1; i >= 0; i--) {
-			switch (mAvaiableDirection.get(i).intValue()) {
-			case Direction.E:
-				if (!checkDirectionEast(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.N:
-				if (!checkDirectionNorth(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.NE:
-				if (!checkDirectionNorthEast(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.NW:
-				if (!checkDirectionNorthWest(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.S:
-				if (!checkDirectionSouth(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.SE:
-				if (!checkDirectionSouthEast(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.SW:
-				if (!checkDirectionSouthWest(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-			case Direction.W:
-				if (!checkDirectionWest(word, startPos)) {
-					mAvaiableDirection.remove(i);
-				}
-				break;
-
-			default:
-				break;
-			}
-		}
-	}
-
-	public boolean checkDirectionNorth(String word, int startPos) {
-		int pos;
-		Cell cell;
-		for (int i = 0; i < word.length(); i++) {
-			pos = startPos - SIZE_X * i;
-			cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionSouth(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + SIZE_X * i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionEast(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionWest(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos - i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionNorthEast(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos - SIZE_X * i + i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionSouthEast(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + SIZE_X * i + i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionNorthWest(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos - SIZE_X * i - i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean checkDirectionSouthWest(String word, int startPos) {
-		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + SIZE_X * i - i;
-			Cell cell = mListCells.get(pos);
-			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private void setCellByDirect(int direct, String word, int startPos) {
-		int pos;
-		Cell cell;
-		switch (direct) {
-		case Direction.E:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.N:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - SIZE_X * i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.NE:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - SIZE_X * i + i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.NW:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - SIZE_X * i - i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.S:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + SIZE_X * i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.SE:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + SIZE_X * i + i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.SW:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + SIZE_X * i - i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-		case Direction.W:
-			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - i;
-				cell = mListCells.get(pos);
-				cell.setLetter(word.charAt(i));
-			}
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	public Cell getCellByRowColumn(int row, int column) {
-		if (column + row * SIZE_X < mListCells.size()) {
-			return mListCells.get(column + row * SIZE_X);
-		}
-		return null;
-	}
-
-	private class GvAdapter extends BaseAdapter {
-
-		private Context context;
-		private ArrayList<Cell> cells;
-
-		public GvAdapter(Context context, ArrayList<Cell> cells) {
-			this.context = context;
-			this.cells = cells;
-		}
-
-		@Override
-		public int getCount() {
-			return cells.size();
-		}
-
-		@Override
-		public Object getItem(int arg0) {
-			return null;
-		}
-
-		@Override
-		public long getItemId(int arg0) {
-			return 0;
-		}
-
-		@SuppressLint("ViewHolder")
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater inflater = (LayoutInflater) context
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = inflater.inflate(R.layout.cell_of_grid, parent, false);
-
-			TextView tvLetter = (TextView) convertView.findViewById(R.id.tvLetter);
-			tvLetter.setText(Character.valueOf(cells.get(position).getLetter()).toString());
-			return convertView;
-		}
-
 	}
 
 	private Cell mStartCell, mEndCell;
@@ -668,11 +318,11 @@ public class MainActivity extends Activity implements OnTouchListener {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			PointF startPoint = new PointF(event.getX(), event.getY());
-			mStartCell = getCellByRowColumn((int) (event.getY() / CELL_SIZE),
-					(int) (event.getX() / CELL_SIZE));
+			mStartCell = WSUtil.getCellByRowColumn((int) (event.getY() / CELL_SIZE),
+					(int) (event.getX() / CELL_SIZE), mListCells);
 			mStrokeView.setColorRandom();
 
-			startPoint = adjustStartPoint(startPoint, (mStartCell.getColumn() + 0.5f) * CELL_SIZE,
+			startPoint = WSUtil.adjustStartPoint(startPoint, (mStartCell.getColumn() + 0.5f) * CELL_SIZE,
 					(mStartCell.getRow() + 0.5f) * CELL_SIZE, CELL_SIZE / 6);
 			mStrokeView.initStartPoint(startPoint.x, startPoint.y);
 			mStrokeView.initEndPoint();
@@ -690,8 +340,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 				mStrokeView.setEndPoint(event.getX(), event.getY());
 				StrokeView.isDrawing = false;
 
-				mEndCell = getCellByRowColumn((int) (event.getY() / CELL_SIZE),
-						(int) (event.getX() / CELL_SIZE));
+				mEndCell = WSUtil.getCellByRowColumn((int) (event.getY() / CELL_SIZE),
+						(int) (event.getX() / CELL_SIZE), mListCells);
 				if (mEndCell == null) {
 					mStrokeView.invalidate();
 					break;
@@ -789,6 +439,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 							if (mFindoutWords.size() == mListWords.length) {
 								showDialogWhenComplete();
 							}
+							showDialogWhenComplete();
 							break;
 						}
 					}
@@ -803,10 +454,41 @@ public class MainActivity extends Activity implements OnTouchListener {
 		return true;
 	}
 	
+	@Override
+	public void onClick(View v) {
+		switch(v.getId()) {
+		case R.id.btnDialogReplay:
+			dismisCompleteDialog();
+			break;
+		case R.id.btnDialogMenu:
+			dismisCompleteDialog();
+			break;
+		case R.id.btnDialogNext:
+			dismisCompleteDialog();
+			break;
+		}
+	};
+	
 	private void showDialogWhenComplete() {
-		Dialog dialog = new Dialog(this, R.style.DialogSlideAnim);
-		dialog.setContentView(R.layout.dialog_complete_level);
-		dialog.show();
+		mCompleteDialog = new Dialog(MainActivity.this, R.style.DialogSlideAnim);
+//	    dialog.setTitle("Animation Dialog");
+		mCompleteDialog.setContentView(R.layout.dialog_complete_level);
+	    // dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation_left_right;
+		mCompleteDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+		mCompleteDialog.show();
+	     
+	    Button btnReplay = (Button) mCompleteDialog.findViewById(R.id.btnDialogReplay);
+	    Button btnMenu = (Button) mCompleteDialog.findViewById(R.id.btnDialogMenu);
+	    Button btnNext = (Button) mCompleteDialog.findViewById(R.id.btnDialogNext);
+	    btnReplay.setOnClickListener(this);
+	    btnMenu.setOnClickListener(this);
+	    btnNext.setOnClickListener(this);
+	}
+	
+	public void dismisCompleteDialog() {
+		if(mCompleteDialog != null && mCompleteDialog.isShowing()) {
+			mCompleteDialog.dismiss();
+		}
 	}
 
 	private void findAllWords() {
@@ -930,37 +612,4 @@ public class MainActivity extends Activity implements OnTouchListener {
 		button.setCompoundDrawables(drawable, null, null, null);
 	}
 
-	public static void centerImageAndTextInButton(Button button) {
-		final int IMAGE2TEXT = 4; // distance between image and text
-		Rect textBounds = new Rect();
-		// Get text bounds
-		CharSequence text = button.getText();
-		if (text != null && text.length() > 0) {
-			TextPaint textPaint = button.getPaint();
-			textPaint.getTextBounds(text.toString(), 0, text.length(), textBounds);
-		}
-		Log.i("centerImageAndTextInButton", "" + text.toString() + " width:" + textBounds.width());
-
-		// Set left drawable bounds
-		Drawable leftDrawable = button.getCompoundDrawables()[0];
-		if (leftDrawable != null) {
-			Rect leftBounds = leftDrawable.copyBounds();
-			int width = button.getWidth() - (button.getPaddingLeft() + button.getPaddingRight());
-			int leftOffset = (width - (textBounds.width() + leftBounds.width()) - button
-					.getCompoundDrawablePadding()) / 2 - button.getCompoundDrawablePadding();
-			leftBounds.offset(leftOffset, 0);
-			leftDrawable.setBounds(leftBounds);
-		}
-	}
-
-	public PointF adjustStartPoint(PointF startPoint, float centerX, float centerY, float radius) {
-		float distance = (float) Math.sqrt((centerX - startPoint.x) * (centerX - startPoint.x)
-				+ (centerY - startPoint.y) * (centerY - startPoint.y));
-		if (distance > radius) {
-			float k = 1 - distance / radius;
-			startPoint.x = (startPoint.x - k * centerX) / (1 - k);
-			startPoint.y = (startPoint.y - k * centerY) / (1 - k);
-		}
-		return startPoint;
-	}
 }
