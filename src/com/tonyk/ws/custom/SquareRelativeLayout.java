@@ -1,22 +1,22 @@
-package com.tonyk.ws;
+package com.tonyk.ws.custom;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 
-public class CustomRelativeLayout extends RelativeLayout {
+public class SquareRelativeLayout extends RelativeLayout {
 
-	public CustomRelativeLayout(Context context) {
+	public SquareRelativeLayout(Context context) {
 		super(context);
 		// TODO Auto-generated constructor stub
 	}
 	
-	public CustomRelativeLayout(Context context, AttributeSet attrs) {
+	public SquareRelativeLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		// TODO Auto-generated constructor stub
 	}
 	
-	public CustomRelativeLayout(Context context, AttributeSet attrs, int defStyle) {
+	public SquareRelativeLayout(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		// TODO Auto-generated constructor stub
 	}

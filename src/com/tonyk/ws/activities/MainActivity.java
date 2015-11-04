@@ -1,24 +1,33 @@
-package com.tonyk.ws;
+package com.tonyk.ws.activities;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Activity;
+import android.animation.ObjectAnimator;
+import android.animation.TimeInterpolator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.Gravity;
@@ -26,21 +35,36 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.tonyk.ws.Cell;
+import com.tonyk.ws.R;
 import com.tonyk.ws.adapters.CellGridviewAdapter;
 import com.tonyk.ws.custom.FlowLayout;
 import com.tonyk.ws.custom.StrokeView;
 import com.tonyk.ws.utils.Define;
 import com.tonyk.ws.utils.WSUtil;
 
-public class MainActivity extends Activity implements OnTouchListener, OnClickListener {
+public class MainActivity extends BaseActivity implements OnTouchListener, OnClickListener {
+
+	private static final TimeInterpolator sDecelerator = new DecelerateInterpolator();
+	private static final TimeInterpolator sAccelerator = new AccelerateInterpolator();
+	private static final int ANIM_DURATION = 500;
+	private static final int ANIM_SCALE = 1;
+	public static final String PACKAGE = "com.tonyk.ws.activities";
+	private static final int LOADING_WAIT_TIME = 500;
 
 	public static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVXYZW";
 
@@ -67,9 +91,9 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 			"SHOULDER,STOMACH,FINGER,TONGUE,ANKLE,CHEST,WAIST,MOUTH,CHEEK,ELBOW,THIGH,THUMB,BRAIN,HAND,NECK,BACK,CHIN,HAIR,FOOT,KNEE,FACE,NOSE,HIP,ARM,LEG,EAR,LIP,EYE",
 			"BUTTERFLY,ABALONE,PEACOCK,RABBIT,CANARY,DONKEY,PIGEON,SPIDER,GIBBON,EAGLE,PANDA,SHARK,SNAKE,TIGER,WOLF,DUCK,SWAN,CRAB,LION,PUMA,ANT,BEE,FOX,PIG,DOG,CAT",
 			"SPARROW,VULTURE,FEATHER,OSTRICH,PENGUIN,TURKEY,PIGEON,FALCON,PARROT,TALON,CRANE,HERON,STORK,EAGLE,GOOSE,CROW,DOVE,NEST,DUCK,SWAN,OWL",
-			"CENTIPEDE,COCKROACH,PARASITE,MOSQUITO,LADYBUG,SCORPION,CRICKET,SPIDER,BEETLE,SNAIL,SWARM,FLEA,WORM,MOTH,WASP,ANT,FLY,BEE"};
+			"CENTIPEDE,COCKROACH,PARASITE,MOSQUITO,LADYBUG,SCORPION,CRICKET,SPIDER,BEETLE,SNAIL,SWARM,FLEA,WORM,MOTH,WASP,ANT,FLY,BEE" };
 
-	private ArrayList<String> mFindoutWords = new ArrayList<String>();
+//	private ArrayList<String> mFindoutWords = new ArrayList<String>();
 
 	private ArrayList<Cell> mListCells = new ArrayList<Cell>();
 	private ArrayList<Integer> mAvaiableDirection = new ArrayList<Integer>();
@@ -88,9 +112,25 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 	private StrokeView mStrokeView;
 	private FlowLayout mFlowLayout;
 
+	private AdView mAdView;
+
 	private int mLevel = 0;
-	
+
 	private Dialog mCompleteDialog;
+	private boolean mIsCreating = false;
+	private Cell mStartCell, mEndCell;
+	
+	private HashMap<String, TextView> mTvWordMap = new HashMap<String, TextView>();
+
+	private int mOriginalOrientation;
+	private ImageView mIvLevelIcon;
+	private RelativeLayout mTopLayout, mContentLayout;
+	private BitmapDrawable mBitmapDrawable;
+	private ColorDrawable mBackground;
+	int mLeftDelta;
+	int mTopDelta;
+	float mWidthScale;
+	float mHeightScale;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,24 +138,29 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 		setContentView(R.layout.activity_main);
 		Log.i("LETTER", "oncreate");
 
-		AdView mAdView = (AdView) findViewById(R.id.adView);
-		AdRequest adRequest = new AdRequest.Builder().build();
-		mAdView.loadAd(adRequest);
+		mAdView = (AdView) findViewById(R.id.adView);
 
 		mGridLetter = (GridView) findViewById(R.id.gvLetter);
-		mGridLetter.setNumColumns(SIZE_X);
+		mStrokeView = (StrokeView) findViewById(R.id.strokeview);
+		mFlowLayout = (FlowLayout) findViewById(R.id.flowLayout);
+		mProgressBar = (ProgressBar) findViewById(R.id.progressbar);
 
+		mGridLetter.setNumColumns(SIZE_X);
 		mAdapter = new CellGridviewAdapter(this, mListCells);
 		mGridLetter.setAdapter(mAdapter);
-
-		mStrokeView = (StrokeView) findViewById(R.id.strokeview);
 		mStrokeView.setOnTouchListener(this);
-
-		mFlowLayout = (FlowLayout) findViewById(R.id.flowLayout);
-
 		mLevel = getIntent().getIntExtra(ChooseLevelActivity.KEY_LEVEL, 0);
-		initListWord(LEVEL_WORD[mLevel]);
+		// initListWord(LEVEL_WORD[mLevel]);
 
+		/************/
+		mIvLevelIcon = (ImageView) findViewById(R.id.iv_level_icon);
+		mTopLayout = (RelativeLayout) findViewById(R.id.topLevelLayout);
+		mContentLayout = (RelativeLayout) findViewById(R.id.contentLayout);
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB_MR1) {
+			setupAnimation();
+		} else {
+			mIvLevelIcon.setVisibility(View.GONE);
+		}
 	}
 
 	@Override
@@ -134,6 +179,7 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 				public void onFinish() {
 					mRunningTime = 0;
 					mProgressBar.setProgress(0);
+					showDialogTimeOut();
 				}
 			};
 			mCountDownTimer.start();
@@ -153,12 +199,17 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 		mListCells.clear();
 		mFlowLayout.removeAllViews();
 		mStrokeView.reset();
-		mFindoutWords.clear();
+//		mFindoutWords.clear();
+		mTvWordMap.clear();
+		if (mCountDownTimer != null) {
+			mCountDownTimer.cancel();
+		}
 
 		// listWord = "LEVEL6,BATHROOM";
 		mListWords = listWord.split(",");
 		TIME_COUNT = mListWords.length * 10;
 
+		ArrayList<TextView> listTvWord = new ArrayList<TextView>();
 		float density = getResources().getDisplayMetrics().density;
 		for (int i = 0; i < mListWords.length; i++) {
 			TextView tvWord = new TextView(this);
@@ -167,6 +218,12 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 			tvWord.setGravity(Gravity.CENTER_HORIZONTAL);
 			tvWord.setPadding((int) (8 * density), (int) (4 * density), (int) (8 * density),
 					(int) (4 * density));
+			listTvWord.add(tvWord);
+			// mFlowLayout.addView(tvWord);
+			mTvWordMap.put(mListWords[i], tvWord);
+		}
+		Collections.shuffle(listTvWord);
+		for (TextView tvWord : listTvWord) {
 			mFlowLayout.addView(tvWord);
 		}
 
@@ -176,28 +233,21 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 			mListCells.add(cell);
 		}
 
-		fillCellAsyncTask();
-
-		// fill all empty cell
-//		Random r = new Random();
-//		for (Cell cell : mListCells) {
-//			if (!cell.isFilled()) {
-//				char letter = (char) (r.nextInt(26) + 'A');
-//				cell.setLetter(letter);
-//			}
-//		}
+		fillCellAsyncTask(true);
 	}
 
-	public void fillCellAsyncTask() {
+	public void fillCellAsyncTask(final boolean isFirstCreate) {
 		new AsyncTask<Void, Void, Void>() {
 			private ProgressDialog dialog;
+			private long startTime;
 
 			protected void onPreExecute() {
+				startTime = System.currentTimeMillis();
 				dialog = new ProgressDialog(MainActivity.this);
 				dialog.setMessage("Creating");
 				dialog.setCancelable(false);
 				dialog.setCanceledOnTouchOutside(false);
-				dialog.show();
+				// dialog.show();
 			};
 
 			@Override
@@ -218,58 +268,123 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 			}
 
 			protected void onPostExecute(Void result) {
-				dialog.dismiss();
+				// dialog.dismiss();
 				mAdapter.notifyDataSetChanged();
 
-				mProgressBar = (ProgressBar) findViewById(R.id.progressbar);
-				mProgressBar.setMax(TIME_COUNT);
-				mProgressBar.setProgress(mProgressBar.getMax());
-				mCountDownTimer = new CountDownTimer(TIME_COUNT * 1000, 1000) {
+				// Check API >= 12
+				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB_MR1) {
+					if (isFirstCreate) {
+						long executeTime = System.currentTimeMillis() - startTime;
+						Log.i("fillCell", "executeTime:" + executeTime);
+						if (executeTime < LOADING_WAIT_TIME) {
+							new Handler().postDelayed(new Runnable() {
 
-					@Override
-					public void onTick(long millisUntilFinished) {
-						Log.i("Log_tag", "Tick of Progress" + millisUntilFinished);
-						mRunningTime = millisUntilFinished;
-						mProgressBar.setProgress((int) (millisUntilFinished / 1000));
+								@Override
+								public void run() {
+									// enterAnimContentLayout();
+									exitAnimLevelIcon();
+								}
+							}, LOADING_WAIT_TIME - executeTime);
+						} else {
+							// enterAnimContentLayout();
+							exitAnimLevelIcon();
+						}
+					} else {
+						initCountDownTime();
 					}
+				} else {
+					/** start count down time */
+					initCountDownTime();
 
-					@Override
-					public void onFinish() {
-						mRunningTime = 0;
-						mProgressBar.setProgress(0);
-						// TODO timeout
-					}
-				};
-				mCountDownTimer.start();
-
+					// show adview
+					AdRequest adRequest = new AdRequest.Builder().build();
+					mAdView.loadAd(adRequest);
+				}
 			};
-
 		}.execute();
 	}
 
+	private void initCountDownTime() {
+		mProgressBar.setMax(TIME_COUNT / 10);
+		mProgressBar.setProgress(mProgressBar.getMax());
+		mCountDownTimer = new CountDownTimer(TIME_COUNT / 10 * 1000, 1000) {
+
+			@Override
+			public void onTick(long millisUntilFinished) {
+				mRunningTime = millisUntilFinished;
+				mProgressBar.setProgress((int) (millisUntilFinished / 1000));
+			}
+
+			@Override
+			public void onFinish() {
+				mRunningTime = 0;
+				mProgressBar.setProgress(0);
+				showDialogTimeOut();
+			}
+		};
+		mCountDownTimer.start();
+	}
+
+	private void exitAnimLevelIcon() {
+		// hide imageview level icon
+		mIvLevelIcon.animate().setDuration(ANIM_DURATION * 2 / 3).alpha(0).scaleX(0).scaleY(0)
+				.translationX(mIvLevelIcon.getWidth() / 2)
+				.translationY(mIvLevelIcon.getHeight() / 2).setInterpolator(sAccelerator);
+
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				enterAnimContentLayout();
+			}
+		}, ANIM_DURATION * 2 / 3 + 20);
+	}
+
+	private void enterAnimContentLayout() {
+		mContentLayout.setVisibility(View.VISIBLE);
+		mContentLayout.setScaleX(0.2f);
+		mContentLayout.setScaleY(0.2f);
+
+		mContentLayout.animate().setDuration(ANIM_DURATION).alpha(1).scaleX(1).scaleY(1)
+				.setInterpolator(new BounceInterpolator());
+
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				mFlowLayout.setPivotY(0);
+				mFlowLayout.setScaleY(0);
+				mFlowLayout.setVisibility(View.VISIBLE);
+				mFlowLayout.animate().setDuration(ANIM_DURATION / 2).scaleY(1f);
+				/** start count down time */
+				initCountDownTime();
+
+				// show adview
+				AdRequest adRequest = new AdRequest.Builder().build();
+				mAdView.loadAd(adRequest);
+
+			}
+		}, ANIM_DURATION + 100);
+	}
+
 	public void onBtnRandomClick(View v) {
+		recreateWordSearch();
+	}
+
+	private void recreateWordSearch() {
 		for (int i = 0; i < mListWords.length; i++) {
-			((TextView) mFlowLayout.getChildAt(i)).setTextColor(Color.BLACK);
+			((TextView) mFlowLayout.getChildAt(i)).setTextColor(Color.WHITE);
 		}
 
 		mCountDownTimer.cancel();
 		mStrokeView.reset();
-		// mListCells.clear();
-		// for (int i = 0; i < SIZE_X * SIZE_Y; i++) {
-		// Cell cell = new Cell(i % SIZE_X, i / SIZE_X);
-		// mListCells.add(cell);
-		// }
 		for (Cell cell : mListCells) {
 			cell.setLetter('\u0000');
 			cell.setFilled(false);
 		}
 
-		fillCellAsyncTask();
-
-		// adapter.notifyDataSetChanged();
+		fillCellAsyncTask(false);
 	}
-
-	boolean isCreating = false;
 
 	public boolean autoFillCell() {
 		Timer timer = new Timer();
@@ -277,23 +392,25 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 
 			@Override
 			public void run() {
-				isCreating = false;
+				mIsCreating = false;
 			}
 		}, 600);
-		isCreating = true;
+		mIsCreating = true;
 		for (int i = 0; i < mListWords.length; i++) {
 			String word = mListWords[i];
 			// int startPos = getStartPosition(word);
 			// checkDirection(word, startPos);
 			int startPos = WSUtil.getStartPosition(word, mListCells, mAvaiableDirection);
-			mAvaiableDirection = WSUtil.getAvaiableDirections(word, startPos, mListCells, mAvaiableDirection);
+			mAvaiableDirection = WSUtil.getAvaiableDirections(word, startPos, mListCells,
+					mAvaiableDirection);
 			while (mAvaiableDirection.isEmpty()) {
 				// startPos = getStartPosition(word);
 				// checkDirection(word, startPos);
 				startPos = WSUtil.getStartPosition(word, mListCells, mAvaiableDirection);
-				mAvaiableDirection = WSUtil.getAvaiableDirections(word, startPos, mListCells, mAvaiableDirection);
+				mAvaiableDirection = WSUtil.getAvaiableDirections(word, startPos, mListCells,
+						mAvaiableDirection);
 				// Log.e("isCreating", isCreating + "");
-				if (!isCreating) {
+				if (!mIsCreating) {
 					Log.i("not", "not success");
 					for (Cell cell : mListCells) {
 						cell.setLetter('\u0000');
@@ -309,8 +426,6 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 		return true;
 	}
 
-	private Cell mStartCell, mEndCell;
-
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		final float CELL_SIZE = (float) mStrokeView.getWidth() / SIZE_X;
@@ -322,8 +437,8 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 					(int) (event.getX() / CELL_SIZE), mListCells);
 			mStrokeView.setColorRandom();
 
-			startPoint = WSUtil.adjustStartPoint(startPoint, (mStartCell.getColumn() + 0.5f) * CELL_SIZE,
-					(mStartCell.getRow() + 0.5f) * CELL_SIZE, CELL_SIZE / 6);
+			startPoint = WSUtil.adjustStartPoint(startPoint, (mStartCell.getColumn() + 0.5f)
+					* CELL_SIZE, (mStartCell.getRow() + 0.5f) * CELL_SIZE, CELL_SIZE / 6);
 			mStrokeView.initStartPoint(startPoint.x, startPoint.y);
 			mStrokeView.initEndPoint();
 			StrokeView.isDrawing = true;
@@ -426,23 +541,38 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 
 				if (word.length() > 0) {
 					Toast.makeText(MainActivity.this, word.toString(), Toast.LENGTH_SHORT).show();
-					for (int i = 0; i < mListWords.length; i++) {
-						if (word.toString().equals(mListWords[i])) {
-							mStrokeView.addFixLine();
-							((TextView) mFlowLayout.getChildAt(i)).setTextColor(Color
-									.parseColor("#66ffffff"));
+					if (mTvWordMap.containsKey(word.toString())) {
+						mStrokeView.addFixLine();
+						mTvWordMap.get(word.toString()).setTextColor(Color
+								.parseColor("#66ffffff"));
+						
+						mTvWordMap.remove(word.toString());
 
-							if (!mFindoutWords.contains(mListWords[i])) {
-								mFindoutWords.add(mListWords[i]);
-							}
+//						if (!mFindoutWords.contains(word.toString())) {
+//							mFindoutWords.add(word.toString());
+//						}
 
-							if (mFindoutWords.size() == mListWords.length) {
-								showDialogWhenComplete();
-							}
-							showDialogWhenComplete();
-							break;
+						if (mTvWordMap.isEmpty()) {
+							actionWhenFindAllWords();
 						}
 					}
+//					for (int i = 0; i < mListWords.length; i++) {
+//						if (word.toString().equals(mListWords[i])) {
+//							mStrokeView.addFixLine();
+//							((TextView) mFlowLayout.getChildAt(i)).setTextColor(Color
+//									.parseColor("#66ffffff"));
+//
+//							if (!mFindoutWords.contains(mListWords[i])) {
+//								mFindoutWords.add(mListWords[i]);
+//							}
+//
+//							if (mFindoutWords.size() == mListWords.length) {
+//								actionWhenFindAllWords();
+//							}
+//							// showDialogWhenComplete();
+//							break;
+//						}
+//					}
 				}
 
 				mStrokeView.invalidate();
@@ -453,54 +583,93 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void onClick(View v) {
-		switch(v.getId()) {
+		switch (v.getId()) {
 		case R.id.btnDialogReplay:
 			dismisCompleteDialog();
+			recreateWordSearch();
 			break;
 		case R.id.btnDialogMenu:
 			dismisCompleteDialog();
+			finish();
 			break;
 		case R.id.btnDialogNext:
 			dismisCompleteDialog();
+			mLevel++;
+
+			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+				new Handler().postDelayed(new Runnable() {
+
+					@Override
+					public void run() {
+						mContentLayout.animate().setDuration(ANIM_DURATION).alpha(0);
+						mFlowLayout.setVisibility(View.INVISIBLE);
+						mIvLevelIcon.setImageResource(ChooseLevelActivity.sLevelIconRes[mLevel]);
+						runEnterAnimation();
+					}
+				}, 200);
+			} else {
+				initListWord(LEVEL_WORD[mLevel]);
+			}
 			break;
 		}
 	};
-	
+
 	private void showDialogWhenComplete() {
-		mCompleteDialog = new Dialog(MainActivity.this, R.style.DialogSlideAnim);
-//	    dialog.setTitle("Animation Dialog");
+		mCompleteDialog = new Dialog(MainActivity.this, R.style.DialogCompleteAnim);
+		// dialog.setTitle("Animation Dialog");
 		mCompleteDialog.setContentView(R.layout.dialog_complete_level);
-	    // dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation_left_right;
+		// dialog.getWindow().getAttributes().windowAnimations =
+		// R.style.dialog_animation_left_right;
 		mCompleteDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 		mCompleteDialog.show();
-	     
-	    Button btnReplay = (Button) mCompleteDialog.findViewById(R.id.btnDialogReplay);
-	    Button btnMenu = (Button) mCompleteDialog.findViewById(R.id.btnDialogMenu);
-	    Button btnNext = (Button) mCompleteDialog.findViewById(R.id.btnDialogNext);
-	    btnReplay.setOnClickListener(this);
-	    btnMenu.setOnClickListener(this);
-	    btnNext.setOnClickListener(this);
+
+		Button btnReplay = (Button) mCompleteDialog.findViewById(R.id.btnDialogReplay);
+		Button btnMenu = (Button) mCompleteDialog.findViewById(R.id.btnDialogMenu);
+		Button btnNext = (Button) mCompleteDialog.findViewById(R.id.btnDialogNext);
+		btnReplay.setOnClickListener(this);
+		btnMenu.setOnClickListener(this);
+		btnNext.setOnClickListener(this);
 	}
-	
-	public void dismisCompleteDialog() {
-		if(mCompleteDialog != null && mCompleteDialog.isShowing()) {
+
+	private void dismisCompleteDialog() {
+		if (mCompleteDialog != null && mCompleteDialog.isShowing()) {
 			mCompleteDialog.dismiss();
 		}
 	}
+	
+	private void showDialogTimeOut() {
+		mCompleteDialog = new Dialog(MainActivity.this, R.style.DialogTimeOutAnim);
+		// dialog.setTitle("Animation Dialog");
+		mCompleteDialog.setContentView(R.layout.dialog_time_out);
+		// dialog.getWindow().getAttributes().windowAnimations =
+		// R.style.dialog_animation_left_right;
+		mCompleteDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+		mCompleteDialog.show();
 
-	private void findAllWords() {
+		Button btnReplay = (Button) mCompleteDialog.findViewById(R.id.btnDialogReplay);
+		Button btnMenu = (Button) mCompleteDialog.findViewById(R.id.btnDialogMenu);
+		btnReplay.setOnClickListener(this);
+		btnMenu.setOnClickListener(this);
+	}
+
+	private void actionWhenFindAllWords() {
 		// TODO
 		mCountDownTimer.cancel();
 
 		// save level
 		SharedPreferences pref = getSharedPreferences(ChooseLevelActivity.PREF_NAME, MODE_PRIVATE);
-		if (mLevel > pref.getInt(ChooseLevelActivity.KEY_MAX_LEVEL, 0)) {
-			pref.edit().putInt(ChooseLevelActivity.KEY_MAX_LEVEL, mLevel).commit();
+		if (mLevel == pref.getInt(ChooseLevelActivity.KEY_MAX_LEVEL, 0)) {
+			pref.edit().putInt(ChooseLevelActivity.KEY_MAX_LEVEL, mLevel + 1).commit();
 		}
 
+		showDialogWhenComplete();
+		
+	}
+
+	private void showCompleteDialogButtonIcon() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage("You won!");
 		builder.setPositiveButton(R.string.next, new DialogInterface.OnClickListener() {
@@ -593,8 +762,8 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 
 		dialog.show();
 	}
-
-	public void setLeftBounds(Button button, Drawable drawable) {
+	
+	private void setLeftBounds(Button button, Drawable drawable) {
 		Rect textBounds = new Rect();
 		// Get text bounds
 		CharSequence text = button.getText();
@@ -610,6 +779,130 @@ public class MainActivity extends Activity implements OnTouchListener, OnClickLi
 		drawable.setBounds(boundLeft, 0, boundRight, drawable.getIntrinsicHeight());
 		// button.setText("");
 		button.setCompoundDrawables(drawable, null, null, null);
+	}
+
+	@SuppressWarnings("deprecation")
+	private void setupAnimation() {
+		mContentLayout.setVisibility(View.GONE);
+		mFlowLayout.setVisibility(View.INVISIBLE);
+		// Retrieve the data we need for the picture/description to display and
+		// the thumbnail to animate it from
+		Bundle bundle = getIntent().getExtras();
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
+				bundle.getInt(PACKAGE + ".resourceId"));
+		final int thumbnailTop = bundle.getInt(PACKAGE + ".top");
+		final int thumbnailLeft = bundle.getInt(PACKAGE + ".left");
+		final int thumbnailWidth = bundle.getInt(PACKAGE + ".width");
+		final int thumbnailHeight = bundle.getInt(PACKAGE + ".height");
+		mOriginalOrientation = bundle.getInt(PACKAGE + ".orientation");
+
+		mBitmapDrawable = new BitmapDrawable(getResources(), bitmap);
+		mIvLevelIcon.setImageDrawable(mBitmapDrawable);
+
+		mBackground = new ColorDrawable(getResources().getColor(R.color.app_color));
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+			mTopLayout.setBackground(mBackground);
+		} else {
+			mTopLayout.setBackgroundDrawable(mBackground);
+		}
+
+		// Only run the animation if we're coming from the parent activity, not
+		// if
+		// we're recreated automatically by the window manager (e.g., device
+		// rotation)
+		ViewTreeObserver observer = mIvLevelIcon.getViewTreeObserver();
+		observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+
+			@Override
+			public boolean onPreDraw() {
+				mIvLevelIcon.getViewTreeObserver().removeOnPreDrawListener(this);
+
+				// Figure out where the thumbnail and full size versions
+				// are, relative
+				// to the screen and each other
+				int[] screenLocation = new int[2];
+				mIvLevelIcon.getLocationOnScreen(screenLocation);
+				mLeftDelta = thumbnailLeft - screenLocation[0];
+				mTopDelta = thumbnailTop - screenLocation[1];
+
+				// Scale factors to make the large version the same size as
+				// the thumbnail
+				mWidthScale = (float) thumbnailWidth / mIvLevelIcon.getWidth();
+				mHeightScale = (float) thumbnailHeight / mIvLevelIcon.getHeight();
+
+				Log.i("enter anim", "leftDelta:" + mLeftDelta + " topDelta:" + mTopDelta
+						+ " scale:" + mWidthScale + " - " + mHeightScale);
+
+				// Set starting values for properties we're going to animate.
+				// These
+				// values scale and position the full size version down to the
+				// thumbnail
+				// size/location, from which we'll animate it back up
+				mIvLevelIcon.setPivotX(0);
+				mIvLevelIcon.setPivotY(0);
+				mIvLevelIcon.setScaleX(mWidthScale);
+				mIvLevelIcon.setScaleY(mHeightScale);
+				mIvLevelIcon.setTranslationX(mLeftDelta);
+				mIvLevelIcon.setTranslationY(mTopDelta);
+				runEnterAnimation();
+
+				return true;
+			}
+		});
+	}
+
+	/**
+	 * The enter animation scales the picture in from its previous thumbnail
+	 * size/location, colorizing it in parallel. In parallel, the background of
+	 * the activity is fading in. When the pictue is in place, the text
+	 * description drops down.
+	 */
+	public void runEnterAnimation() {
+		final long duration = (long) (ANIM_DURATION * ANIM_SCALE);
+
+		// We'll fade the text in later
+		// mTextView.setAlpha(0);
+
+		// mContentLayout.setPivotX(0);
+		// mContentLayout.setPivotY(0);
+		// mContentLayout.setAlpha(0);
+
+		// Animate scale and translation to go from thumbnail to full size
+//		int transX = (int) ((mIvLevelIcon.getWidth() * 0.5) / 2);
+//		int transY = (int) ((mIvLevelIcon.getHeight() * 0.5) / 2);
+		mIvLevelIcon.animate().setDuration(duration).scaleX(1f).scaleY(1f).alpha(1).translationX(0)
+				.translationY(0).setInterpolator(sDecelerator);
+		// .withEndAction(new Runnable() {
+		// public void run() {
+		// initListWord(LEVEL_WORD[mLevel]);
+		// }
+		// });
+
+		// Fade in the black background
+		ObjectAnimator bgAnim = ObjectAnimator.ofInt(mBackground, "alpha", 0, 255); // 0-255
+		bgAnim.setDuration(duration);
+		bgAnim.start();
+
+		new Handler().postDelayed(new Runnable() {
+			public void run() {
+				initListWord(LEVEL_WORD[mLevel]);
+			}
+		}, duration);
+
+		// Animate a color filter to take the image from grayscale to full
+		// color.
+		// This happens in parallel with the image scaling and moving into
+		// place.
+		// ObjectAnimator colorizer = ObjectAnimator.ofFloat(this,
+		// "saturation", 0, 1);
+		// colorizer.setDuration(duration);
+		// colorizer.start();
+
+		// Animate a drop-shadow of the image
+		// ObjectAnimator shadowAnim = ObjectAnimator.ofFloat(mShadowLayout,
+		// "shadowDepth", 0, 1);
+		// shadowAnim.setDuration(duration);
+		// shadowAnim.start();
 	}
 
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.tonyk.ws.custom.CustomRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.tonyk.ws.custom.SquareRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.tonyk.ws"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -7,26 +7,22 @@
 
     <com.tonyk.ws.custom.RoundedImageView
         android:id="@+id/ivLevelIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:src="@drawable/level1_icon"
-        android:scaleType="centerInside"
+        android:scaleType="fitXY"
         app:corner_radius="4dp"
         app:border_width="1dp"
         app:border_color="#607D8B" />
 
     <com.tonyk.ws.custom.RoundedImageView
         android:id="@+id/ivLocker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/ivLevelIcon"
-        android:layout_alignLeft="@id/ivLevelIcon"
-        android:layout_alignRight="@id/ivLevelIcon"
-        android:layout_alignTop="@id/ivLevelIcon"
-        android:scaleType="centerInside"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
         android:src="@drawable/icon_locked_image"
         app:corner_radius="4dp" />
 
-</com.tonyk.ws.custom.CustomRelativeLayout>
+</com.tonyk.ws.custom.SquareRelativeLayout>

@@ -11,11 +11,12 @@ import android.util.Log;
 import android.widget.Button;
 
 import com.tonyk.ws.Cell;
-import com.tonyk.ws.MainActivity.Direction;
+import com.tonyk.ws.activities.MainActivity.Direction;
 
 public class WSUtil {
 
-	public static ArrayList<Integer> getAvaiableDirections(String word, int startPos, ArrayList<Cell> listCells, ArrayList<Integer> avaiableDirections) {
+	public static ArrayList<Integer> getAvaiableDirections(String word, int startPos,
+			ArrayList<Cell> listCells, ArrayList<Integer> avaiableDirections) {
 		for (int i = avaiableDirections.size() - 1; i >= 0; i--) {
 			switch (avaiableDirections.get(i).intValue()) {
 			case Direction.E:
@@ -63,7 +64,7 @@ public class WSUtil {
 				break;
 			}
 		}
-		
+
 		return avaiableDirections;
 	}
 
@@ -113,7 +114,8 @@ public class WSUtil {
 		return true;
 	}
 
-	private static boolean checkDirectionNorthEast(String word, int startPos, ArrayList<Cell> listCells) {
+	private static boolean checkDirectionNorthEast(String word, int startPos,
+			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
 			int pos = startPos - Define.SIZE_X * i + i;
 			Cell cell = listCells.get(pos);
@@ -124,7 +126,8 @@ public class WSUtil {
 		return true;
 	}
 
-	private static boolean checkDirectionSouthEast(String word, int startPos, ArrayList<Cell> listCells) {
+	private static boolean checkDirectionSouthEast(String word, int startPos,
+			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
 			int pos = startPos + Define.SIZE_X * i + i;
 			Cell cell = listCells.get(pos);
@@ -135,7 +138,8 @@ public class WSUtil {
 		return true;
 	}
 
-	private static boolean checkDirectionNorthWest(String word, int startPos, ArrayList<Cell> listCells) {
+	private static boolean checkDirectionNorthWest(String word, int startPos,
+			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
 			int pos = startPos - Define.SIZE_X * i - i;
 			Cell cell = listCells.get(pos);
@@ -146,7 +150,8 @@ public class WSUtil {
 		return true;
 	}
 
-	private static boolean checkDirectionSouthWest(String word, int startPos, ArrayList<Cell> listCells) {
+	private static boolean checkDirectionSouthWest(String word, int startPos,
+			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
 			int pos = startPos + Define.SIZE_X * i - i;
 			Cell cell = listCells.get(pos);
@@ -157,7 +162,8 @@ public class WSUtil {
 		return true;
 	}
 
-	public static void setCellByDirect(int direct, String word, int startPos, ArrayList<Cell> listCells) {
+	public static void setCellByDirect(int direct, String word, int startPos,
+			ArrayList<Cell> listCells) {
 		int pos;
 		Cell cell;
 		switch (direct) {
@@ -223,7 +229,8 @@ public class WSUtil {
 		}
 	}
 
-	public static int getStartPosition(String word, ArrayList<Cell> listCells, ArrayList<Integer> avaiableDirections) {
+	public static int getStartPosition(String word, ArrayList<Cell> listCells,
+			ArrayList<Integer> avaiableDirections) {
 		avaiableDirections.clear();
 		Random r = new Random();
 		int x, y;
@@ -234,8 +241,8 @@ public class WSUtil {
 			x = r.nextInt(Define.SIZE_X);
 			y = r.nextInt(Define.SIZE_Y);
 			cell = listCells.get(x + y * Define.SIZE_X);
-		} while ((offsetX < x && x < Define.SIZE_X - 1 - offsetX && offsetY < y && y < Define.SIZE_Y - 1
-				- offsetY)
+		} while ((offsetX < x && x < Define.SIZE_X - 1 - offsetX && offsetY < y && y < Define.SIZE_Y
+				- 1 - offsetY)
 				|| (cell.isFilled() && cell.getLetter() != word.charAt(0)));
 
 		if (x <= Define.SIZE_X - word.length() && y <= Define.SIZE_Y - word.length()) {
@@ -325,15 +332,16 @@ public class WSUtil {
 		Random r = new Random();
 		return avaiableDirections.get(r.nextInt(avaiableDirections.size())).intValue();
 	}
-	
+
 	public static Cell getCellByRowColumn(int row, int column, ArrayList<Cell> listCells) {
 		if (column + row * Define.SIZE_X < listCells.size()) {
 			return listCells.get(column + row * Define.SIZE_X);
 		}
 		return null;
 	}
-	
-	public static PointF adjustStartPoint(PointF startPoint, float centerX, float centerY, float radius) {
+
+	public static PointF adjustStartPoint(PointF startPoint, float centerX, float centerY,
+			float radius) {
 		float distance = (float) Math.sqrt((centerX - startPoint.x) * (centerX - startPoint.x)
 				+ (centerY - startPoint.y) * (centerY - startPoint.y));
 		if (distance > radius) {
@@ -343,9 +351,9 @@ public class WSUtil {
 		}
 		return startPoint;
 	}
-	
+
 	public static void centerImageAndTextInButton(Button button) {
-		final int IMAGE2TEXT = 4; // distance between image and text
+		// final int IMAGE2TEXT = 4; // distance between image and text
 		Rect textBounds = new Rect();
 		// Get text bounds
 		CharSequence text = button.getText();
@@ -364,6 +372,18 @@ public class WSUtil {
 					.getCompoundDrawablePadding()) / 2 - button.getCompoundDrawablePadding();
 			leftBounds.offset(leftOffset, 0);
 			leftDrawable.setBounds(leftBounds);
+		}
+	}
+
+	public static void shuffleArray(int[] array) {
+		// If running on Java 6 or older, use `new Random()` on RHS here
+		Random rnd = new Random();
+		for (int i = array.length - 1; i > 0; i--) {
+			int index = rnd.nextInt(i + 1);
+			// Simple swap
+			int a = array[index];
+			array[index] = array[i];
+			array[i] = a;
 		}
 	}
 }

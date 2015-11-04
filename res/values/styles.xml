@@ -2,11 +2,10 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppBaseTheme" parent="Theme.AppCompat.Light">
+    <style name="AppBaseTheme">
         <item name="android:windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
@@ -15,13 +14,24 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <style name="Transparent">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
     <style name="DialogAnimation">
         <item name="android:windowEnterAnimation">@anim/slide_in_down</item>
         <item name="android:windowExitAnimation">@anim/slide_out_down</item>
     </style>
 
     <!-- Animation for dialog box -->
-    <style name="DialogSlideAnim" parent="@android:style/Theme.Dialog">
+    <style name="DialogCompleteAnim" parent="@android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@style/dialog_anim_zoomin_moveout</item>
+    </style>
+    
+    <style name="DialogTimeOutAnim" parent="@android:style/Theme.Dialog">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@style/dialog_animation_top_bottom</item>
     </style>
@@ -33,6 +43,11 @@
     
     <style name="dialog_animation_top_bottom">
         <item name="android:windowEnterAnimation">@anim/slide_in_top</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
+    </style>
+
+    <style name="dialog_anim_zoomin_moveout">
+        <item name="android:windowEnterAnimation">@anim/zoom_in_bounce</item>
         <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
     </style>
 
