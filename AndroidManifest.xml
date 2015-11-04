@@ -16,11 +16,6 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name" >
-            
-        </activity>
 
         <!-- Activity required to show ad overlays. -->
         <activity
@@ -34,12 +29,21 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".ChooseLevelActivity" >
+            android:name="com.tonyk.ws.activities.ChooseLevelActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        
+        <activity
+            android:name="com.tonyk.ws.activities.MainActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/app_name"
+            android:theme="@style/Transparent" >
+            
         </activity>
     </application>
 
