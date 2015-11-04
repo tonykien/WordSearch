@@ -305,9 +305,9 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 	}
 
 	private void initCountDownTime() {
-		mProgressBar.setMax(TIME_COUNT / 10);
+		mProgressBar.setMax(TIME_COUNT);
 		mProgressBar.setProgress(mProgressBar.getMax());
-		mCountDownTimer = new CountDownTimer(TIME_COUNT / 10 * 1000, 1000) {
+		mCountDownTimer = new CountDownTimer(TIME_COUNT * 1000, 1000) {
 
 			@Override
 			public void onTick(long millisUntilFinished) {
