@@ -17,7 +17,7 @@ public class StrokeView extends View {
 
 	private Paint paint;
 	private PointF startPoint, endPoint;
-	public static boolean isDrawing;
+	private boolean mIsDrawing;
 	
 	private String[] colors = new String[] {"#50f44336", "#50e91e63", "#509c27b0", "#50673ab7", "#503f51b5",
 			"#502196f3", "#5003a9f4", "#5000bcd4", "#50009688", "#504caf50", "#508bc34a", "#50cddc39",
@@ -42,6 +42,14 @@ public class StrokeView extends View {
 	public StrokeView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		init();
+	}
+	
+	public void setIsDrawing(boolean drawing) {
+		mIsDrawing = drawing;
+	}
+	
+	public boolean isDrawing() {
+		return mIsDrawing;
 	}
 
 	private void init() {
@@ -105,7 +113,7 @@ public class StrokeView extends View {
 			Paint paint = listPaint.get(i);
 			canvas.drawLine(startP.x, startP.y, endP.x, endP.y, paint);
 		}
-		if (isDrawing) {
+		if (mIsDrawing) {
 			canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, paint);
 		}
 	}
@@ -116,20 +124,20 @@ public class StrokeView extends View {
 		case MotionEvent.ACTION_DOWN:
 			startPoint = new PointF(event.getX(), event.getY());
 			endPoint = new PointF();
-			isDrawing = true;
+			mIsDrawing = true;
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if (isDrawing) {
+			if (mIsDrawing) {
 				endPoint.x = event.getX();
 				endPoint.y = event.getY();
 				invalidate();
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			if (isDrawing) {
+			if (mIsDrawing) {
 				endPoint.x = event.getX();
 				endPoint.y = event.getY();
-				isDrawing = false;
+				mIsDrawing = false;
 				invalidate();
 			}
 			break;

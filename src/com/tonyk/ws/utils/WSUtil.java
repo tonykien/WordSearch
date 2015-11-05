@@ -11,9 +11,12 @@ import android.util.Log;
 import android.widget.Button;
 
 import com.tonyk.ws.Cell;
-import com.tonyk.ws.activities.MainActivity.Direction;
+import com.tonyk.ws.utils.Define.Direction;
 
 public class WSUtil {
+	
+	public static int sSizeX;
+	public static int sSizeY;
 
 	public static ArrayList<Integer> getAvaiableDirections(String word, int startPos,
 			ArrayList<Cell> listCells, ArrayList<Integer> avaiableDirections) {
@@ -72,7 +75,7 @@ public class WSUtil {
 		int pos;
 		Cell cell;
 		for (int i = 0; i < word.length(); i++) {
-			pos = startPos - Define.SIZE_X * i;
+			pos = startPos - sSizeX * i;
 			cell = listCells.get(pos);
 			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
 				return false;
@@ -83,7 +86,7 @@ public class WSUtil {
 
 	private static boolean checkDirectionSouth(String word, int startPos, ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + Define.SIZE_X * i;
+			int pos = startPos + sSizeX * i;
 			Cell cell = listCells.get(pos);
 			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
 				return false;
@@ -117,7 +120,7 @@ public class WSUtil {
 	private static boolean checkDirectionNorthEast(String word, int startPos,
 			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos - Define.SIZE_X * i + i;
+			int pos = startPos - sSizeX * i + i;
 			Cell cell = listCells.get(pos);
 			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
 				return false;
@@ -129,7 +132,7 @@ public class WSUtil {
 	private static boolean checkDirectionSouthEast(String word, int startPos,
 			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + Define.SIZE_X * i + i;
+			int pos = startPos + sSizeX * i + i;
 			Cell cell = listCells.get(pos);
 			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
 				return false;
@@ -141,7 +144,7 @@ public class WSUtil {
 	private static boolean checkDirectionNorthWest(String word, int startPos,
 			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos - Define.SIZE_X * i - i;
+			int pos = startPos - sSizeX * i - i;
 			Cell cell = listCells.get(pos);
 			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
 				return false;
@@ -153,7 +156,7 @@ public class WSUtil {
 	private static boolean checkDirectionSouthWest(String word, int startPos,
 			ArrayList<Cell> listCells) {
 		for (int i = 0; i < word.length(); i++) {
-			int pos = startPos + Define.SIZE_X * i - i;
+			int pos = startPos + sSizeX * i - i;
 			Cell cell = listCells.get(pos);
 			if (cell.isFilled() && cell.getLetter() != word.charAt(i)) {
 				return false;
@@ -176,42 +179,42 @@ public class WSUtil {
 			break;
 		case Direction.N:
 			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - Define.SIZE_X * i;
+				pos = startPos - sSizeX * i;
 				cell = listCells.get(pos);
 				cell.setLetter(word.charAt(i));
 			}
 			break;
 		case Direction.NE:
 			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - Define.SIZE_X * i + i;
+				pos = startPos - sSizeX * i + i;
 				cell = listCells.get(pos);
 				cell.setLetter(word.charAt(i));
 			}
 			break;
 		case Direction.NW:
 			for (int i = 0; i < word.length(); i++) {
-				pos = startPos - Define.SIZE_X * i - i;
+				pos = startPos - sSizeX * i - i;
 				cell = listCells.get(pos);
 				cell.setLetter(word.charAt(i));
 			}
 			break;
 		case Direction.S:
 			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + Define.SIZE_X * i;
+				pos = startPos + sSizeX * i;
 				cell = listCells.get(pos);
 				cell.setLetter(word.charAt(i));
 			}
 			break;
 		case Direction.SE:
 			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + Define.SIZE_X * i + i;
+				pos = startPos + sSizeX * i + i;
 				cell = listCells.get(pos);
 				cell.setLetter(word.charAt(i));
 			}
 			break;
 		case Direction.SW:
 			for (int i = 0; i < word.length(); i++) {
-				pos = startPos + Define.SIZE_X * i - i;
+				pos = startPos + sSizeX * i - i;
 				cell = listCells.get(pos);
 				cell.setLetter(word.charAt(i));
 			}
@@ -235,17 +238,17 @@ public class WSUtil {
 		Random r = new Random();
 		int x, y;
 		Cell cell;
-		int offsetX = Define.SIZE_X - word.length();
-		int offsetY = Define.SIZE_Y - word.length();
+		int offsetX = sSizeX - word.length();
+		int offsetY = sSizeY - word.length();
 		do {
-			x = r.nextInt(Define.SIZE_X);
-			y = r.nextInt(Define.SIZE_Y);
-			cell = listCells.get(x + y * Define.SIZE_X);
-		} while ((offsetX < x && x < Define.SIZE_X - 1 - offsetX && offsetY < y && y < Define.SIZE_Y
+			x = r.nextInt(sSizeX);
+			y = r.nextInt(sSizeY);
+			cell = listCells.get(x + y * sSizeX);
+		} while ((offsetX < x && x < sSizeX - 1 - offsetX && offsetY < y && y < sSizeY
 				- 1 - offsetY)
 				|| (cell.isFilled() && cell.getLetter() != word.charAt(0)));
 
-		if (x <= Define.SIZE_X - word.length() && y <= Define.SIZE_Y - word.length()) {
+		if (x <= sSizeX - word.length() && y <= sSizeY - word.length()) {
 			if (!avaiableDirections.contains(Integer.valueOf(Direction.S))) {
 				avaiableDirections.add(Integer.valueOf(Direction.S));
 			}
@@ -259,7 +262,7 @@ public class WSUtil {
 			}
 		}
 
-		if (x <= Define.SIZE_X - word.length() && y >= word.length()) {
+		if (x <= sSizeX - word.length() && y >= word.length()) {
 			if (!avaiableDirections.contains(Integer.valueOf(Direction.N))) {
 				avaiableDirections.add(Integer.valueOf(Direction.N));
 			}
@@ -287,7 +290,7 @@ public class WSUtil {
 			}
 		}
 
-		if (x >= word.length() && y <= Define.SIZE_Y - word.length()) {
+		if (x >= word.length() && y <= sSizeY - word.length()) {
 			if (!avaiableDirections.contains(Integer.valueOf(Direction.S))) {
 				avaiableDirections.add(Integer.valueOf(Direction.S));
 			}
@@ -301,7 +304,7 @@ public class WSUtil {
 			}
 		}
 
-		if (x <= Define.SIZE_X - word.length()) {
+		if (x <= sSizeX - word.length()) {
 			if (!avaiableDirections.contains(Integer.valueOf(Direction.E))) {
 				avaiableDirections.add(Integer.valueOf(Direction.E));
 			}
@@ -313,7 +316,7 @@ public class WSUtil {
 			}
 		}
 
-		if (y <= Define.SIZE_Y - word.length()) {
+		if (y <= sSizeY - word.length()) {
 			if (!avaiableDirections.contains(Integer.valueOf(Direction.S))) {
 				avaiableDirections.add(Integer.valueOf(Direction.S));
 			}
@@ -325,7 +328,7 @@ public class WSUtil {
 			}
 		}
 
-		return x + y * Define.SIZE_X;
+		return x + y * sSizeX;
 	}
 
 	public static int getRandomDirection(ArrayList<Integer> avaiableDirections) {
@@ -334,8 +337,8 @@ public class WSUtil {
 	}
 
 	public static Cell getCellByRowColumn(int row, int column, ArrayList<Cell> listCells) {
-		if (column + row * Define.SIZE_X < listCells.size()) {
-			return listCells.get(column + row * Define.SIZE_X);
+		if (column + row * sSizeX < listCells.size()) {
+			return listCells.get(column + row * sSizeX);
 		}
 		return null;
 	}

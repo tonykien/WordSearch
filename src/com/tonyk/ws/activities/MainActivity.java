@@ -68,17 +68,6 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 
 	public static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVXYZW";
 
-	public static final class Direction {
-		public static final int N = 0;
-		public static final int NE = 1;
-		public static final int E = 2;
-		public static final int SE = 3;
-		public static final int S = 4;
-		public static final int SW = 5;
-		public static final int W = 6;
-		public static final int NW = 7;
-	}
-
 	private String[] mListWords = new String[] { "HOANGVUNAM", "TRUNGKIEN", "MOBIPHONE",
 			"PANASONIC", "MOTOROLA", "TOSHIBA", "SAMSUNG", "ANDROID", "SUZUKI", "TOYOTA", "DAIKIN",
 			"HAIYEN", "BPHONE", "GOOGLE", "HONDA", "APPLE", "SHARP", "NOKIA", "DREAM", "SONY" };
@@ -160,6 +149,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 			setupAnimation();
 		} else {
 			mIvLevelIcon.setVisibility(View.GONE);
+			initListWord(LEVEL_WORD[mLevel]);
 		}
 	}
 
@@ -387,6 +377,9 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 	}
 
 	public boolean autoFillCell() {
+		WSUtil.sSizeX = SIZE_X;
+		WSUtil.sSizeY = SIZE_Y;
+		
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 
@@ -441,19 +434,19 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 					* CELL_SIZE, (mStartCell.getRow() + 0.5f) * CELL_SIZE, CELL_SIZE / 6);
 			mStrokeView.initStartPoint(startPoint.x, startPoint.y);
 			mStrokeView.initEndPoint();
-			StrokeView.isDrawing = true;
+			mStrokeView.setIsDrawing(true);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if (StrokeView.isDrawing) {
+			if (mStrokeView.isDrawing()) {
 				mStrokeView.setEndPoint(event.getX(), event.getY());
 				mStrokeView.invalidate();
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			if (StrokeView.isDrawing) {
+			if (mStrokeView.isDrawing()) {
 				PointF endPoint = new PointF(event.getX(), event.getY());
 				mStrokeView.setEndPoint(event.getX(), event.getY());
-				StrokeView.isDrawing = false;
+				mStrokeView.setIsDrawing(false);
 
 				mEndCell = WSUtil.getCellByRowColumn((int) (event.getY() / CELL_SIZE),
 						(int) (event.getX() / CELL_SIZE), mListCells);
