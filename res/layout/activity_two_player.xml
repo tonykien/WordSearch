@@ -1,0 +1,47 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <GridView
+        android:id="@+id/gvLetter1"
+        android:layout_width="240dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        android:background="#9e9e9e"
+        android:gravity="center"
+        android:stretchMode="columnWidth" >
+    </GridView>
+
+    <com.tonyk.ws.custom.StrokeView
+        android:id="@+id/strokeview1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/gvLetter1"
+        android:layout_alignLeft="@id/gvLetter1"
+        android:layout_alignRight="@id/gvLetter1"
+        android:layout_alignTop="@id/gvLetter1" >
+    </com.tonyk.ws.custom.StrokeView>
+    
+    <GridView
+        android:id="@+id/gvLetter2"
+        android:layout_width="240dp"
+        android:layout_height="200dp"
+        android:layout_alignParentBottom="true"
+        android:background="#9e9e9e"
+        android:gravity="center"
+        android:stretchMode="columnWidth" >
+    </GridView>
+
+    <com.tonyk.ws.custom.StrokeView
+        android:id="@+id/strokeview2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/gvLetter2"
+        android:layout_alignLeft="@id/gvLetter2"
+        android:layout_alignRight="@id/gvLetter2"
+        android:layout_alignTop="@id/gvLetter2" >
+    </com.tonyk.ws.custom.StrokeView>
+
+</RelativeLayout>
