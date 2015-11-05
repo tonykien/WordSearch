@@ -1,47 +1,97 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_color"
+    android:orientation="vertical"
+    android:weightSum="1"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <GridView
-        android:id="@+id/gvLetter1"
-        android:layout_width="240dp"
-        android:layout_height="200dp"
-        android:layout_alignParentTop="true"
-        android:background="#9e9e9e"
-        android:gravity="center"
-        android:stretchMode="columnWidth" >
-    </GridView>
+    <RelativeLayout
+        android:id="@+id/layoutPlayer1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5" >
 
-    <com.tonyk.ws.custom.StrokeView
-        android:id="@+id/strokeview1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/gvLetter1"
-        android:layout_alignLeft="@id/gvLetter1"
-        android:layout_alignRight="@id/gvLetter1"
-        android:layout_alignTop="@id/gvLetter1" >
-    </com.tonyk.ws.custom.StrokeView>
-    
-    <GridView
-        android:id="@+id/gvLetter2"
-        android:layout_width="240dp"
-        android:layout_height="200dp"
-        android:layout_alignParentBottom="true"
-        android:background="#9e9e9e"
-        android:gravity="center"
-        android:stretchMode="columnWidth" >
-    </GridView>
+        <TextView
+            android:id="@+id/tvWordsPlayer1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_alignParentTop="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textSize="12sp"
+            android:textColor="@android:color/white" />
 
-    <com.tonyk.ws.custom.StrokeView
-        android:id="@+id/strokeview2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/gvLetter2"
-        android:layout_alignLeft="@id/gvLetter2"
-        android:layout_alignRight="@id/gvLetter2"
-        android:layout_alignTop="@id/gvLetter2" >
-    </com.tonyk.ws.custom.StrokeView>
+        <GridView
+            android:id="@+id/gvLetter1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/tvWordsPlayer1"
+            android:layout_centerHorizontal="true"
+            android:background="#9e9e9e"
+            android:gravity="center"
+            android:stretchMode="columnWidth" >
+        </GridView>
 
-</RelativeLayout>
+        <com.tonyk.ws.custom.StrokeView
+            android:id="@+id/strokeview1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/gvLetter1"
+            android:layout_alignLeft="@id/gvLetter1"
+            android:layout_alignRight="@id/gvLetter1"
+            android:layout_alignTop="@id/gvLetter1" >
+        </com.tonyk.ws.custom.StrokeView>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white" />
+
+    <RelativeLayout
+        android:id="@+id/layoutPlayer2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5" >
+
+        <TextView
+            android:id="@+id/tvWordsPlayer2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_alignParentTop="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            android:textSize="12sp" />
+
+        <GridView
+            android:id="@+id/gvLetter2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/tvWordsPlayer2"
+            android:layout_centerHorizontal="true"
+            android:background="#9e9e9e"
+            android:gravity="center"
+            android:stretchMode="columnWidth" >
+        </GridView>
+
+        <com.tonyk.ws.custom.StrokeView
+            android:id="@+id/strokeview2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/gvLetter2"
+            android:layout_alignLeft="@id/gvLetter2"
+            android:layout_alignRight="@id/gvLetter2"
+            android:layout_alignTop="@id/gvLetter2" >
+        </com.tonyk.ws.custom.StrokeView>
+    </RelativeLayout>
+
+</LinearLayout>

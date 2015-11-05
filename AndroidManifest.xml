@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="11"
         android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -41,6 +41,7 @@
         </activity>
         <activity
             android:name="com.tonyk.ws.activities.TwoPlayerActivity"
+            android:theme="@style/fullscreen"
             android:label="@string/title_activity_two_player" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

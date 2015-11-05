@@ -86,12 +86,40 @@ public class StrokeView extends View {
 		paint.setColor(Color.parseColor(colors[random.nextInt(colors.length)]));
 	}
 	
+	public void setColorOfPlayer1() {
+		paint.setColor(Color.parseColor(colors[4]));
+	}
+	
+	public void setColorOfPlayer2() {
+		paint.setColor(Color.parseColor(colors[8]));
+	}
+	
 	public void setStrokeWidth(float width) {
 		paint.setStrokeWidth(width);
 	}
 	
+	public Paint getPaint() {
+		return paint;
+	}
+	
+	public PointF getCurrentStartPoint() {
+		return startPoint;
+	}
+	
+	public PointF getCurrentEndPoint() {
+		return endPoint;
+	}
+	
 	public void addFixLine() {
 		Log.i("addFixLine", "addFixLine");
+		listStartPoint.add(startPoint);
+		listEndPoint.add(endPoint);
+		Paint fixPaint = new Paint(paint);
+		listPaint.add(fixPaint);
+	}
+	
+	public void addFixLine(PointF startPoint, PointF endPoint, Paint paint) {
+		Log.i("addFixLine", "addFixLine2");
 		listStartPoint.add(startPoint);
 		listEndPoint.add(endPoint);
 		Paint fixPaint = new Paint(paint);

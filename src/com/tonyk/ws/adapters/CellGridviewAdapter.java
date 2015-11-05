@@ -17,10 +17,15 @@ public class CellGridviewAdapter extends BaseAdapter {
 
 	private Context context;
 	private ArrayList<Cell> cells;
+	private boolean isTwoPlayer = false;
 
 	public CellGridviewAdapter(Context context, ArrayList<Cell> cells) {
 		this.context = context;
 		this.cells = cells;
+	}
+	
+	public void setIsTwoPlayer(boolean isTwoPlayer) {
+		this.isTwoPlayer = isTwoPlayer;
 	}
 
 	@Override
@@ -47,6 +52,9 @@ public class CellGridviewAdapter extends BaseAdapter {
 
 		TextView tvLetter = (TextView) convertView.findViewById(R.id.tvLetter);
 		tvLetter.setText(Character.valueOf(cells.get(position).getLetter()).toString());
+		if (isTwoPlayer) {
+			tvLetter.setTextSize(context.getResources().getDimensionPixelSize(R.dimen.cell_text_size_two_player));
+		}
 		return convertView;
 	}
 

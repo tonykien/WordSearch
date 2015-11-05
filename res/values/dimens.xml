@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="cell_text_size">18sp</dimen>
+    <dimen name="cell_text_size_two_player">14sp</dimen>
     
 </resources>
