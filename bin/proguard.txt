@@ -1,0 +1,34 @@
+# view AndroidManifest.xml #generated:21
+-keep class com.google.android.gms.ads.AdActivity { <init>(...); }
+
+# view res/layout/activity_main.xml #generated:14
+-keep class com.google.android.gms.ads.AdView { <init>(...); }
+
+# view AndroidManifest.xml #generated:31
+-keep class com.tonyk.ws.activities.ChooseLevelActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:36
+-keep class com.tonyk.ws.activities.MainActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:42
+-keep class com.tonyk.ws.activities.TwoPlayerActivity { <init>(...); }
+
+# view res/layout/activity_main.xml #generated:54
+-keep class com.tonyk.ws.custom.FlowLayout { <init>(...); }
+
+# view res/layout/row_level_gridview.xml #generated:20
+# view res/layout/row_level_gridview.xml #generated:8
+-keep class com.tonyk.ws.custom.RoundedImageView { <init>(...); }
+
+# view res/layout/cell_of_grid.xml #generated:2
+# view res/layout/row_level_gridview.xml #generated:2
+-keep class com.tonyk.ws.custom.SquareRelativeLayout { <init>(...); }
+
+# view res/layout/activity_main.xml #generated:34
+# view res/layout/activity_two_player.xml #generated:102
+# view res/layout/activity_two_player.xml #generated:48
+-keep class com.tonyk.ws.custom.StrokeView { <init>(...); }
+
+# onClick res/layout/activity_main.xml #generated:67
+-keepclassmembers class * { *** onBtnRandomClick(...); }
+

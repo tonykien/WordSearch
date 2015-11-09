@@ -1,14 +1,12 @@
 package com.tonyk.ws.activities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -18,8 +16,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LayoutAnimationController;
 import android.view.animation.RotateAnimation;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -40,6 +36,7 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 	public int SIZE_Y = Define.SIZE_Y - 2;
 
 	private TextView mTvWord1, mTvWord2;
+	private TextView mTvWordNumber1, mTvWordNumber2;
 	private GridView mGridLetter1;
 	private StrokeView mStrokeView1;
 	private GridView mGridLetter2;
@@ -51,6 +48,8 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 	private ArrayList<String> mListWord = new ArrayList<String>();
 	private String[] mWordArray;
 	private boolean mIsCreating;
+	
+	private int mTotalWordCount, mCountPlayer1, mCountPlayer2;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +64,9 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 		
 		mTvWord1 = (TextView) findViewById(R.id.tvWordsPlayer1);
 		mTvWord2 = (TextView) findViewById(R.id.tvWordsPlayer2);
+		
+		mTvWordNumber1 = (TextView) findViewById(R.id.tvWordNumber1);
+		mTvWordNumber2 = (TextView) findViewById(R.id.tvWordNumber2);
 
 		mTvWord1.setSelected(true);
 		mTvWord2.setSelected(true);
@@ -269,12 +271,15 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 									mStrokeView1.getCurrentStartPoint(),
 									endPoint, mStrokeView1.getPaint());
 							mStrokeView2.invalidate();
+							
+							mTvWordNumber1.setText((++mCountPlayer1) + "/" + mTotalWordCount);
 						} else {
 							mStrokeView2.addFixLine();
 							mStrokeView1.addFixLine(
 									mStrokeView2.getCurrentStartPoint(),
 									endPoint, mStrokeView2.getPaint());
 							mStrokeView1.invalidate();
+							mTvWordNumber2.setText((++mCountPlayer2) + "/" + mTotalWordCount);
 						}
 
 						mListWord.remove(word.toString());
@@ -309,6 +314,11 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 		}
 		mTvWord1.setText(textWords);
 		mTvWord2.setText(textWords);
+		
+		mTotalWordCount = mListWord.size();
+		
+		mTvWordNumber1.setText(0 + "/" + mTotalWordCount);
+		mTvWordNumber2.setText(0 + "/" + mTotalWordCount);
 
 		// init cells
 		for (int i = 0; i < SIZE_X * SIZE_Y; i++) {

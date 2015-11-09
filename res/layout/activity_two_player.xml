@@ -24,6 +24,17 @@
             android:singleLine="true"
             android:textSize="12sp"
             android:textColor="@android:color/white" />
+        
+        <TextView 
+            android:id="@+id/tvWordNumber1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/tvWordsPlayer1"
+            android:layout_alignBottom="@id/tvWordsPlayer1"
+            android:gravity="center_vertical"
+            android:background="@android:color/white"
+            android:textStyle="bold" />
 
         <GridView
             android:id="@+id/gvLetter1"
@@ -70,6 +81,17 @@
             android:singleLine="true"
             android:textColor="@android:color/white"
             android:textSize="12sp" />
+        
+        <TextView 
+            android:id="@+id/tvWordNumber2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/tvWordsPlayer2"
+            android:layout_alignBottom="@id/tvWordsPlayer2"
+            android:gravity="center_vertical"
+            android:background="@android:color/white"
+            android:textStyle="bold" />
 
         <GridView
             android:id="@+id/gvLetter2"
