@@ -15,8 +15,8 @@ import android.view.View;
 
 public class StrokeView extends View {
 
-	private Paint paint;
-	private PointF startPoint, endPoint;
+	private Paint mPaint;
+	private PointF mStartPoint, mEndPoint;
 	private boolean mIsDrawing;
 	
 	private String[] colors = new String[] {"#50f44336", "#50e91e63", "#509c27b0", "#50673ab7", "#503f51b5",
@@ -25,9 +25,9 @@ public class StrokeView extends View {
 	
 	private Random random;
 	
-	private ArrayList<PointF> listStartPoint = new ArrayList<PointF>();
-	private ArrayList<PointF> listEndPoint = new ArrayList<PointF>();
-	private ArrayList<Paint> listPaint = new ArrayList<Paint>();
+	private ArrayList<PointF> mListStartPoint = new ArrayList<PointF>();
+	private ArrayList<PointF> mListEndPoint = new ArrayList<PointF>();
+	private ArrayList<Paint> mListPaint = new ArrayList<Paint>();
 
 	public StrokeView(Context context) {
 		super(context);
@@ -54,95 +54,95 @@ public class StrokeView extends View {
 
 	private void init() {
 		random = new Random();
-		paint = new Paint();
+		mPaint = new Paint();
 //		paint.setColor(Color.RED);
 //		paint.setStyle(Style.STROKE);
 //		paint.setStrokeWidth(2);
 //		paint.setAntiAlias(true);
 		
-	    paint.setStrokeWidth(50);               // set the size
-	    paint.setDither(true);                    // set the dither to true
-	    paint.setStyle(Paint.Style.STROKE);       // set to STOKE
+	    mPaint.setStrokeWidth(50);               // set the size
+	    mPaint.setDither(true);                    // set the dither to true
+	    mPaint.setStyle(Paint.Style.STROKE);       // set to STOKE
 	    // paint.setStrokeJoin(Paint.Join.ROUND);    // set the join to round you want
-	    paint.setStrokeCap(Paint.Cap.ROUND);      // set the paint cap to round too
+	    mPaint.setStrokeCap(Paint.Cap.ROUND);      // set the paint cap to round too
 	    // paint.setPathEffect(new CornerPathEffect(10) );   // set the path effect when they join.
-	    paint.setAntiAlias(true);                         // set anti alias so it smooths
+	    mPaint.setAntiAlias(true);                         // set anti alias so it smooths
 	}
 
 	public void initStartPoint(float x, float y) {
-		startPoint = new PointF(x, y);
+		mStartPoint = new PointF(x, y);
 	}
 	
-	public void initEndPoint() {
-		endPoint = new PointF();
+	public void initEndPoint(float x, float y) {
+		mEndPoint = new PointF(x, y);
 	}
 	
 	public void setEndPoint(float x, float y) {
-		endPoint.x = x;
-		endPoint.y = y;
+		mEndPoint.x = x;
+		mEndPoint.y = y;
 	}
 	
 	public void setColorRandom() {
-		paint.setColor(Color.parseColor(colors[random.nextInt(colors.length)]));
+		mPaint.setColor(Color.parseColor(colors[random.nextInt(colors.length)]));
 	}
 	
 	public void setColorOfPlayer1() {
-		paint.setColor(Color.parseColor(colors[4]));
+		mPaint.setColor(Color.parseColor(colors[4]));
 	}
 	
 	public void setColorOfPlayer2() {
-		paint.setColor(Color.parseColor(colors[8]));
+		mPaint.setColor(Color.parseColor(colors[8]));
 	}
 	
 	public void setStrokeWidth(float width) {
-		paint.setStrokeWidth(width);
+		mPaint.setStrokeWidth(width);
 	}
 	
 	public Paint getPaint() {
-		return paint;
+		return mPaint;
 	}
 	
 	public PointF getCurrentStartPoint() {
-		return startPoint;
+		return mStartPoint;
 	}
 	
 	public PointF getCurrentEndPoint() {
-		return endPoint;
+		return mEndPoint;
 	}
 	
 	public void addFixLine() {
 		Log.i("addFixLine", "addFixLine");
-		listStartPoint.add(startPoint);
-		listEndPoint.add(endPoint);
-		Paint fixPaint = new Paint(paint);
-		listPaint.add(fixPaint);
+		mListStartPoint.add(mStartPoint);
+		mListEndPoint.add(mEndPoint);
+		Paint fixPaint = new Paint(mPaint);
+		mListPaint.add(fixPaint);
 	}
 	
 	public void addFixLine(PointF startPoint, PointF endPoint, Paint paint) {
 		Log.i("addFixLine", "addFixLine2");
-		listStartPoint.add(startPoint);
-		listEndPoint.add(endPoint);
+		mListStartPoint.add(startPoint);
+		mListEndPoint.add(endPoint);
 		Paint fixPaint = new Paint(paint);
-		listPaint.add(fixPaint);
+		mListPaint.add(fixPaint);
 	}
 	
 	public void reset() {
-		listEndPoint.clear();
-		listPaint.clear();
-		listStartPoint.clear();
+		mListEndPoint.clear();
+		mListPaint.clear();
+		mListStartPoint.clear();
 		invalidate();
 	}
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		for (int i = 0; i < listStartPoint.size(); i++) {
-			PointF startP = listStartPoint.get(i);
-			PointF endP = listEndPoint.get(i);
-			Paint paint = listPaint.get(i);
+		for (int i = 0; i < mListStartPoint.size(); i++) {
+			PointF startP = mListStartPoint.get(i);
+			PointF endP = mListEndPoint.get(i);
+			Paint paint = mListPaint.get(i);
 			canvas.drawLine(startP.x, startP.y, endP.x, endP.y, paint);
 		}
 		if (mIsDrawing) {
-			canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, paint);
+			canvas.drawLine(mStartPoint.x, mStartPoint.y, mEndPoint.x, mEndPoint.y, mPaint);
 		}
 	}
 
@@ -150,21 +150,21 @@ public class StrokeView extends View {
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			startPoint = new PointF(event.getX(), event.getY());
-			endPoint = new PointF();
+			mStartPoint = new PointF(event.getX(), event.getY());
+			mEndPoint = new PointF();
 			mIsDrawing = true;
 			break;
 		case MotionEvent.ACTION_MOVE:
 			if (mIsDrawing) {
-				endPoint.x = event.getX();
-				endPoint.y = event.getY();
+				mEndPoint.x = event.getX();
+				mEndPoint.y = event.getY();
 				invalidate();
 			}
 			break;
 		case MotionEvent.ACTION_UP:
 			if (mIsDrawing) {
-				endPoint.x = event.getX();
-				endPoint.y = event.getY();
+				mEndPoint.x = event.getX();
+				mEndPoint.y = event.getY();
 				mIsDrawing = false;
 				invalidate();
 			}

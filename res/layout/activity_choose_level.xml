@@ -4,12 +4,16 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
+    <include 
+        android:id="@+id/header"
+        layout="@layout/header"/>
+    
     <GridView
         android:id="@+id/gvLevel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
+        android:layout_below="@id/header"
+        android:layout_margin="4dp"
         android:numColumns="3" >
     </GridView>
 

@@ -337,7 +337,7 @@ public class WSUtil {
 	}
 
 	public static Cell getCellByRowColumn(int row, int column, ArrayList<Cell> listCells) {
-		if (column + row * sSizeX < listCells.size()) {
+		if ((column + row * sSizeX) >= 0 && (column + row * sSizeX) < listCells.size()) {
 			return listCells.get(column + row * sSizeX);
 		}
 		return null;

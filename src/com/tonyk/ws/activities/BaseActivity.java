@@ -35,7 +35,7 @@ public class BaseActivity extends Activity {
     @Override
     public void finish() {
         super.finish();
-        overridePendingTransition(0, R.anim.zoom_out);
+        overridePendingTransition(R.anim.translate_in_left, R.anim.translate_out_right);
     }
 
     // ===========================================================================

@@ -15,7 +15,9 @@
         android:scaleType="fitXY"
         app:corner_radius="4dp"
         app:border_width="1dp"
-        app:border_color="#607D8B" />
+        app:border_color="#607D8B"
+        android:clickable="false"
+        android:focusable="false" />
 
     <com.tonyk.ws.custom.RoundedImageView
         android:id="@+id/ivLocker"
@@ -23,6 +25,8 @@
         android:layout_height="match_parent"
         android:scaleType="fitXY"
         android:src="@drawable/icon_locked_image"
-        app:corner_radius="4dp" />
+        app:corner_radius="4dp"
+        android:clickable="false"
+        android:focusable="false" />
 
 </com.tonyk.ws.custom.SquareRelativeLayout>

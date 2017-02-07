@@ -1,5 +1,9 @@
 package com.tonyk.ws.activities;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,12 +13,14 @@ import java.util.TimerTask;
 
 import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -37,6 +43,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
@@ -50,6 +58,7 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.tonyk.ws.Cell;
+import com.tonyk.ws.Constants;
 import com.tonyk.ws.R;
 import com.tonyk.ws.adapters.CellGridviewAdapter;
 import com.tonyk.ws.custom.FlowLayout;
@@ -57,7 +66,7 @@ import com.tonyk.ws.custom.StrokeView;
 import com.tonyk.ws.utils.Define;
 import com.tonyk.ws.utils.WSUtil;
 
-public class MainActivity extends BaseActivity implements OnTouchListener, OnClickListener {
+public class MainActivity extends Activity implements OnTouchListener, OnClickListener {
 
 	private static final TimeInterpolator sDecelerator = new DecelerateInterpolator();
 	private static final TimeInterpolator sAccelerator = new AccelerateInterpolator();
@@ -71,18 +80,6 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 	private String[] mListWords = new String[] { "HOANGVUNAM", "TRUNGKIEN", "MOBIPHONE",
 			"PANASONIC", "MOTOROLA", "TOSHIBA", "SAMSUNG", "ANDROID", "SUZUKI", "TOYOTA", "DAIKIN",
 			"HAIYEN", "BPHONE", "GOOGLE", "HONDA", "APPLE", "SHARP", "NOKIA", "DREAM", "SONY" };
-	String ANIMAL = "BUTTERFLY,ABALONE,PEACOCK,RABBIT,CANARY,DONKEY,PIGEON,SPIDER,GIBBON,EAGLE,PANDA,SHARK,SNAKE,TIGER,WOLF,DUCK,SWAN,CRAB,LION,PUMA,ANT,BEE,FOX,PIG,DOG,CAT";
-	String BODY = "SHOULDER,STOMACH,FINGER,TONGUE,ANKLE,CHEST,WAIST,MOUTH,CHEEK,ELBOW,THIGH,THUMB,BRAIN,HAND,NECK,BACK,CHIN,HAIR,FOOT,KNEE,FACE,NOSE,HIP,ARM,LEG,EAR,LIP,EYE";
-	String FRUIT = "STRAWBERRY,WATERMELON,AVOCADO,COCONUT,PEANUT,PAPAYA,ORANGE,BANANA,DURIAN,CHERRY,LONGAN,GRAPE,APPLE,MANGO,LEMON,PEACH,GUAVA,PEAR,PLUM,LIME,KIWI,FIG";
-
-	public static final String[] LEVEL_WORD = new String[] {
-			"STRAWBERRY,WATERMELON,AVOCADO,COCONUT,PEANUT,PAPAYA,ORANGE,BANANA,DURIAN,CHERRY,LONGAN,GRAPE,APPLE,MANGO,LEMON,PEACH,GUAVA,PEAR,PLUM,LIME,KIWI,FIG",
-			"SHOULDER,STOMACH,FINGER,TONGUE,ANKLE,CHEST,WAIST,MOUTH,CHEEK,ELBOW,THIGH,THUMB,BRAIN,HAND,NECK,BACK,CHIN,HAIR,FOOT,KNEE,FACE,NOSE,HIP,ARM,LEG,EAR,LIP,EYE",
-			"BUTTERFLY,ABALONE,PEACOCK,RABBIT,CANARY,DONKEY,PIGEON,SPIDER,GIBBON,EAGLE,PANDA,SHARK,SNAKE,TIGER,WOLF,DUCK,SWAN,CRAB,LION,PUMA,ANT,BEE,FOX,PIG,DOG,CAT",
-			"SPARROW,VULTURE,FEATHER,OSTRICH,PENGUIN,TURKEY,PIGEON,FALCON,PARROT,TALON,CRANE,HERON,STORK,EAGLE,GOOSE,CROW,DOVE,NEST,DUCK,SWAN,OWL",
-			"CENTIPEDE,COCKROACH,PARASITE,MOSQUITO,LADYBUG,SCORPION,CRICKET,SPIDER,BEETLE,SNAIL,SWARM,FLEA,WORM,MOTH,WASP,ANT,FLY,BEE" };
-
-//	private ArrayList<String> mFindoutWords = new ArrayList<String>();
 
 	private ArrayList<Cell> mListCells = new ArrayList<Cell>();
 	private ArrayList<Integer> mAvaiableDirection = new ArrayList<Integer>();
@@ -116,10 +113,10 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 	private RelativeLayout mTopLayout, mContentLayout;
 	private BitmapDrawable mBitmapDrawable;
 	private ColorDrawable mBackground;
-	int mLeftDelta;
-	int mTopDelta;
-	float mWidthScale;
-	float mHeightScale;
+	private int mLeftDelta;
+	private int mTopDelta;
+	private float mWidthScale;
+	private float mHeightScale;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +136,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 		mGridLetter.setAdapter(mAdapter);
 		mStrokeView.setOnTouchListener(this);
 		mLevel = getIntent().getIntExtra(ChooseLevelActivity.KEY_LEVEL, 0);
-		// initListWord(LEVEL_WORD[mLevel]);
+		// initGridWord();
 
 		/************/
 		mIvLevelIcon = (ImageView) findViewById(R.id.iv_level_icon);
@@ -149,8 +146,24 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 			setupAnimation();
 		} else {
 			mIvLevelIcon.setVisibility(View.GONE);
-			initListWord(LEVEL_WORD[mLevel]);
+			initGridWord();
 		}
+		
+	}
+	
+	private void setupHeader() {
+		ImageView ivBack = (ImageView) findViewById(R.id.iv_back);
+		ivBack.setVisibility(View.VISIBLE);
+		ivBack.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		
+		TextView tvTitle = (TextView) findViewById(R.id.tv_title);
+		tvTitle.setText(Constants.LEVEL_TITLE[mLevel]);
 	}
 
 	@Override
@@ -184,20 +197,63 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 		}
 		super.onPause();
 	}
+	
+	@Override
+	public void finish() {
+		super.finish();
+        overridePendingTransition(0, R.anim.zoom_out);
+		/*mFlowLayout.setVisibility(View.INVISIBLE);
+		mAdView.setVisibility(View.INVISIBLE);
+		mProgressBar.setVisibility(View.INVISIBLE);
+		findViewById(R.id.header).setVisibility(View.INVISIBLE);
+		Animation anim = AnimationUtils.loadAnimation(this, R.anim.zoom_out);
+		mGridLetter.startAnimation(anim);
+		new Handler().postDelayed(new Runnable() {
+			
+			@Override
+			public void run() {
+				MainActivity.super.finish();
+				
+			}
+		}, 400);*/
+	}
+	
+	private String readListWord(int level) {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("wordlist_v1.txt")));
 
-	public void initListWord(String listWord) {
+			int count = 0;
+	        String line = reader.readLine();
+	        while (line != null) {
+	        	if (count == level) {
+	        		reader.close();
+	        		return line;
+	        	}
+	        	count ++;
+	            line = reader.readLine();
+	        }
+	        reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void initGridWord() {
+		// String listWord = Constants.LEVEL_WORD[mLevel];
+		String listWord = readListWord(mLevel);
 		mListCells.clear();
 		mFlowLayout.removeAllViews();
 		mStrokeView.reset();
-//		mFindoutWords.clear();
 		mTvWordMap.clear();
 		if (mCountDownTimer != null) {
 			mCountDownTimer.cancel();
 		}
 
-		// listWord = "LEVEL6,BATHROOM";
+		// make icon level
+		// listWord = "LEVEL13,SPORT";
 		mListWords = listWord.split(",");
-		TIME_COUNT = mListWords.length * 10;
+		TIME_COUNT = mListWords.length * 10; // TODO
 
 		ArrayList<TextView> listTvWord = new ArrayList<TextView>();
 		float density = getResources().getDisplayMetrics().density;
@@ -346,6 +402,10 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 				mFlowLayout.setScaleY(0);
 				mFlowLayout.setVisibility(View.VISIBLE);
 				mFlowLayout.animate().setDuration(ANIM_DURATION / 2).scaleY(1f);
+				
+				// setup header
+				setupHeader();
+				
 				/** start count down time */
 				initCountDownTime();
 
@@ -358,7 +418,8 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 	}
 
 	public void onBtnRandomClick(View v) {
-		recreateWordSearch();
+		// recreateWordSearch();
+		initGridWord();
 	}
 
 	private void recreateWordSearch() {
@@ -433,7 +494,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 			startPoint = WSUtil.adjustStartPoint(startPoint, (mStartCell.getColumn() + 0.5f)
 					* CELL_SIZE, (mStartCell.getRow() + 0.5f) * CELL_SIZE, CELL_SIZE / 6);
 			mStrokeView.initStartPoint(startPoint.x, startPoint.y);
-			mStrokeView.initEndPoint();
+			mStrokeView.initEndPoint(startPoint.x, startPoint.y);
 			mStrokeView.setIsDrawing(true);
 			break;
 		case MotionEvent.ACTION_MOVE:
@@ -533,39 +594,20 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 				mStrokeView.setEndPoint(endPoint.x, endPoint.y);
 
 				if (word.length() > 0) {
-					Toast.makeText(MainActivity.this, word.toString(), Toast.LENGTH_SHORT).show();
+					Toast toast = Toast.makeText(MainActivity.this, word.toString(), Toast.LENGTH_SHORT);
+					toast.setDuration(10);
+					toast.show();
+					// Toast.makeText(MainActivity.this, word.toString(), Toast.LENGTH_SHORT).show();
 					if (mTvWordMap.containsKey(word.toString())) {
 						mStrokeView.addFixLine();
-						mTvWordMap.get(word.toString()).setTextColor(Color
-								.parseColor("#66ffffff"));
+						mTvWordMap.get(word.toString()).setTextColor(getResources().getColor(R.color.color_text_found));
 						
 						mTvWordMap.remove(word.toString());
-
-//						if (!mFindoutWords.contains(word.toString())) {
-//							mFindoutWords.add(word.toString());
-//						}
 
 						if (mTvWordMap.isEmpty()) {
 							actionWhenFindAllWords();
 						}
 					}
-//					for (int i = 0; i < mListWords.length; i++) {
-//						if (word.toString().equals(mListWords[i])) {
-//							mStrokeView.addFixLine();
-//							((TextView) mFlowLayout.getChildAt(i)).setTextColor(Color
-//									.parseColor("#66ffffff"));
-//
-//							if (!mFindoutWords.contains(mListWords[i])) {
-//								mFindoutWords.add(mListWords[i]);
-//							}
-//
-//							if (mFindoutWords.size() == mListWords.length) {
-//								actionWhenFindAllWords();
-//							}
-//							// showDialogWhenComplete();
-//							break;
-//						}
-//					}
 				}
 
 				mStrokeView.invalidate();
@@ -604,7 +646,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 					}
 				}, 200);
 			} else {
-				initListWord(LEVEL_WORD[mLevel]);
+				initGridWord();
 			}
 			break;
 		}
@@ -617,6 +659,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 		// dialog.getWindow().getAttributes().windowAnimations =
 		// R.style.dialog_animation_left_right;
 		mCompleteDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+		mCompleteDialog.setCancelable(false);
 		mCompleteDialog.show();
 
 		Button btnReplay = (Button) mCompleteDialog.findViewById(R.id.btnDialogReplay);
@@ -640,6 +683,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 		// dialog.getWindow().getAttributes().windowAnimations =
 		// R.style.dialog_animation_left_right;
 		mCompleteDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+		mCompleteDialog.setCancelable(false);
 		mCompleteDialog.show();
 
 		Button btnReplay = (Button) mCompleteDialog.findViewById(R.id.btnDialogReplay);
@@ -670,7 +714,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 				dialog.dismiss();
 
 				mLevel++;
-				initListWord(LEVEL_WORD[mLevel]);
+				initGridWord();
 			}
 		});
 
@@ -684,7 +728,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 		builder.setNegativeButton(R.string.replay, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				dialog.dismiss();
-				initListWord(LEVEL_WORD[mLevel]);
+				initGridWord();
 			}
 		});
 
@@ -781,6 +825,10 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 		// Retrieve the data we need for the picture/description to display and
 		// the thumbnail to animate it from
 		Bundle bundle = getIntent().getExtras();
+		if (bundle == null) {
+			return;
+		}
+		
 		Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
 				bundle.getInt(PACKAGE + ".resourceId"));
 		final int thumbnailTop = bundle.getInt(PACKAGE + ".top");
@@ -878,7 +926,7 @@ public class MainActivity extends BaseActivity implements OnTouchListener, OnCli
 
 		new Handler().postDelayed(new Runnable() {
 			public void run() {
-				initListWord(LEVEL_WORD[mLevel]);
+				initGridWord();
 			}
 		}, duration);
 

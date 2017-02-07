@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -17,8 +18,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.tonyk.ws.Constants;
 import com.tonyk.ws.R;
 import com.tonyk.ws.custom.RoundedImageView;
 
@@ -32,8 +36,9 @@ public class ChooseLevelActivity extends BaseActivity {
 	public static final String KEY_MAX_LEVEL = "max_level";
 
 	public static final int[] sLevelIconRes = new int[] { R.drawable.level1_icon, R.drawable.level2_icon,
-			R.drawable.level3_icon, R.drawable.level4_icon, R.drawable.level5_icon,
-			R.drawable.level6_icon };
+			R.drawable.level3_icon, R.drawable.level4_icon, R.drawable.level5_icon, R.drawable.level6_icon,
+			R.drawable.level7_icon, R.drawable.level8_icon, R.drawable.level9_icon, R.drawable.level10_icon,
+			R.drawable.level11_icon, R.drawable.level12_icon, R.drawable.level13_icon };
 
 	private int mMaxLevel;
 	private int mPosition;
@@ -45,7 +50,8 @@ public class ChooseLevelActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_choose_level);
-
+		setupHeader();
+		
 		final Animation scaleAnim = AnimationUtils.loadAnimation(this, R.anim.scale_anim);
 		scaleAnim.setAnimationListener(new AnimationListener() {
 
@@ -127,6 +133,21 @@ public class ChooseLevelActivity extends BaseActivity {
 		super.onResume();
 	}
 	
+	private void setupHeader() {
+		ImageView ivBack = (ImageView) findViewById(R.id.iv_back);
+		ivBack.setVisibility(View.VISIBLE);
+		ivBack.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		
+		TextView tvTitle = (TextView) findViewById(R.id.tv_title);
+		tvTitle.setText(R.string.choose_level);
+	}
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		// Checks the orientation of the screen
@@ -182,7 +203,7 @@ public class ChooseLevelActivity extends BaseActivity {
 			if (position <= mMaxLevel) {
 				ivLocker.setVisibility(View.GONE);
 			}
-
+			
 			return convertView;
 		}
 

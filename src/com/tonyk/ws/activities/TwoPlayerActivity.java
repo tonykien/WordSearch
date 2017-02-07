@@ -21,6 +21,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.tonyk.ws.Cell;
+import com.tonyk.ws.Constants;
 import com.tonyk.ws.R;
 import com.tonyk.ws.adapters.CellGridviewAdapter;
 import com.tonyk.ws.custom.StrokeView;
@@ -96,7 +97,7 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 
 		WSUtil.sSizeX = SIZE_X;
 		WSUtil.sSizeY = SIZE_Y;
-		initListWord(MainActivity.LEVEL_WORD[0]);
+		initListWord(Constants.LEVEL_WORD[0]);
 	}
 
 	@Override
@@ -131,7 +132,7 @@ public class TwoPlayerActivity extends Activity implements OnTouchListener {
 					(startCell.getColumn() + 0.5f) * CELL_SIZE,
 					(startCell.getRow() + 0.5f) * CELL_SIZE, CELL_SIZE / 6);
 			strokeView.initStartPoint(startPoint.x, startPoint.y);
-			strokeView.initEndPoint();
+			strokeView.initEndPoint(startPoint.x, startPoint.y);
 			strokeView.setIsDrawing(true);
 			break;
 		case MotionEvent.ACTION_MOVE:
